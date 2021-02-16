@@ -13,8 +13,10 @@
 #include <stdio.h>
 #include "parser.h"
 #include "scanner.h"
+#include "semantic.h"
 
 extern int yynerrs;
+extern int errsem;
 
 int main() {
 	int parser = yyparse();
@@ -30,6 +32,6 @@ int main() {
 		break;
 		}
 
-	printf("Errores sintácticos: %d - Errores léxicos: %d\n", yynerrs, errlex);
+	printf("Errores sintácticos: %d - Errores léxicos: %d - Errores semanticos: %d\n", yynerrs, errlex, errsem);
 	return parser;
 }

@@ -1,20 +1,24 @@
 %code top{
 #include <stdio.h>
 #include "scanner.h"
+#include "symbol.h"
+#include "semantic.h"
 }
 
 %code provides {
-extern int errlex; 	/* Contador de Errores Léxicos */
+extern int errlex; 	//Contador de Errores Léxicos
+int errsem = 0;         //Contador de Errores Semanticos
 void yyerror(const char *);
+char *tipoMensaje[] = {"ya", "nunca"}; //Especifica el tipo de mensaje para el error semantico
 }
 
 %defines "parser.h"
 %output "parser.c"
 
 %define api.value.type {char *}
-%define parse.error verbose /* Mas detalles cuando el Parser encuentre un error en vez de "Syntax Error" */
+%define parse.error verbose //Mas detalles cuando el Parser encuentre un error en vez de "Syntax Error"
 
-%start programa /* El no terminal que es AXIOMA de la gramatica del TP2 */
+%start programa //El no terminal que es AXIOMA de la gramatica del TP2
 
 %token PROGRAMA FIN_PROG DECLARAR LEER ESCRIBIR CONSTANTE IDENTIFICADOR
 %token ASIGNACION "<-"
@@ -25,35 +29,35 @@ void yyerror(const char *);
 
 %%
 
-programa : PROGRAMA listaSentencias FIN_PROG             {if (errlex || yynerrs) YYABORT; else YYACCEPT;}
+programa : PROGRAMA {inicio();} listaSentencias FIN_PROG             {fin(); if (errlex || yynerrs || errsem) YYABORT; else YYACCEPT;}
 
 listaSentencias	:	  %empty
                         | listaSentencias sentencia
                         ;
 
-sentencia       :     	  LEER '(' listaIdentificadores ')' ';'           {printf("leer\n");}
-                        | ESCRIBIR '(' listaExpresiones ')' ';'           {printf("escribir\n");}
-                        | DECLARAR IDENTIFICADOR ';'                      {printf("declarar %s\n",$3);}
-                        | IDENTIFICADOR "<-" expresion ';'                {printf("asignacion\n");}
+sentencia       :     	  LEER '(' listaIdentificadores ')' ';'
+                        | ESCRIBIR '(' listaExpresiones ')' ';'
+                        | DECLARAR IDENTIFICADOR ';'                      {if(!existe($2)){declarar($2); agregar($2);} else{mostrarError($2,0); YYERROR;}}'.'
+                        | IDENTIFICADOR "<-" expresion ';'                {guardar($3,$1);}
                         | error ';'
                         ;   
 
-listaIdentificadores :    IDENTIFICADOR
-                        | listaIdentificadores ',' IDENTIFICADOR
+listaIdentificadores :    IDENTIFICADOR                                   {leer($1);}
+                        | listaIdentificadores ',' IDENTIFICADOR          {leer($3);}
                         ;
 
-listaExpresiones :   	  expresion
-                        | listaExpresiones ',' expresion
+listaExpresiones :   	  expresion                                       {escribir($1);}
+                        | listaExpresiones ',' expresion                  {escribir($3);}
                         ;
                             
 expresion :               CONSTANTE
-                        | IDENTIFICADOR
-                        | '(' expresion ')'                               {printf("paréntesis\n");}
-                        | '-' expresion   %prec NEG                       {printf("inversion\n");}
-                        | expresion '+' expresion                         {printf("suma\n");}
-                        | expresion '-' expresion                         {printf("resta\n");}
-                        | expresion '*' expresion                         {printf("multiplicacion\n");}
-                        | expresion '/' expresion                         {printf("division\n");}
+                        | IDENTIFICADOR                                   {if(!existe($1)){mostrarError($1,1); YYERROR;}else $$ = $1;}
+                        | '(' expresion ')'                               {$$ = $2;}
+                        | '-' expresion   %prec NEG                       {$$ = negar($2);}
+                        | expresion '+' expresion                         {$$ = sumar($1, $3);}
+                        | expresion '-' expresion                         {$$ = restar($1, $3);}
+                        | expresion '*' expresion                         {$$ = multiplicar($1, $3);}
+                        | expresion '/' expresion                         {$$ = dividir($1, $3);}
                         ;
 
 
@@ -62,4 +66,11 @@ expresion :               CONSTANTE
 void yyerror(const char *error){
         printf("Linea #%d: %s\n", yylineno, error);
         return;
+}
+
+void mostrarError(char *id, int tipoError){
+	char errorMsg[200];
+	sprintf(errorMsg, "Error semantico: El identificador %s %s fue declarado", id, tipoMensaje[tipoError]);
+	yyerror(errorMsg);
+	errsem++;
 }
