@@ -7,7 +7,7 @@ int temporales;
 const int id_max = 20;
 
 void declarar(char *id){
-	printf("Declare %s, Integer\n", id);
+	printf("Reserve %s, 4\n", id); //reservo 4 bytes para la variable con nombre dado por el id
 }
 
 char* proxTemporal(){
@@ -27,7 +27,7 @@ void escribir(char *id){
 char* negar(char *idEntrada){
   	char *idSalida;
 	idSalida = proxTemporal();
-	printf("INV %s,,%s\n", idEntrada, idSalida);
+	printf("NEG %s,,%s\n", idEntrada, idSalida);
 	return idSalida;
 }
 char* multiplicar(char *idEntrada1, char *idEntrada2){
@@ -64,5 +64,5 @@ void inicio(){
 	printf("Load rtlib,\n");
 }
 void fin(){
-	printf("Stop ,\n");
+	printf("Exit ,\n");
 }
