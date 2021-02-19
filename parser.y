@@ -1,16 +1,16 @@
-%code top{
+%{
 #include <stdio.h>
 #include "scanner.h"
 #include "symbol.h"
 #include "semantic.h"
-}
 
-%code provides {
+void yyerror(const char *);
+void mostrarError(char *id, int e);
 extern int errlex; 	//Contador de Errores Léxicos
 int errsem = 0;         //Contador de Errores Semanticos
-void yyerror(const char *);
 char *tipoMensaje[] = {"ya", "nunca"}; //Especifica el tipo de mensaje para el error semantico
-}
+%}
+
 
 %defines "parser.h"
 %output "parser.c"
@@ -37,13 +37,13 @@ listaSentencias	:	  %empty
 
 sentencia       :     	  LEER '(' listaIdentificadores ')' ';'
                         | ESCRIBIR '(' listaExpresiones ')' ';'
-                        | DECLARAR IDENTIFICADOR ';'                      {if(!existe($2)){declarar($2); agregar($2);} else{mostrarError($2,0); YYERROR;}}'.'
+                        | DECLARAR IDENTIFICADOR ';'                      {if(!existe($2)){declarar($2); agregar($2);} else{mostrarError($2,0); YYERROR;}}
                         | IDENTIFICADOR "<-" expresion ';'                {guardar($3,$1);}
                         | error ';'
                         ;   
 
-listaIdentificadores :    IDENTIFICADOR                                   {leer($1);}
-                        | listaIdentificadores ',' IDENTIFICADOR          {leer($3);}
+listaIdentificadores :    identificador                                   {leer($1);}
+                        | listaIdentificadores ',' identificador          {leer($3);}
                         ;
 
 listaExpresiones :   	  expresion                                       {escribir($1);}
@@ -51,7 +51,7 @@ listaExpresiones :   	  expresion                                       {escribi
                         ;
                             
 expresion :               CONSTANTE
-                        | IDENTIFICADOR                                   {if(!existe($1)){mostrarError($1,1); YYERROR;}else $$ = $1;}
+                        | identificador
                         | '(' expresion ')'                               {$$ = $2;}
                         | '-' expresion   %prec NEG                       {$$ = negar($2);}
                         | expresion '+' expresion                         {$$ = sumar($1, $3);}
@@ -60,6 +60,7 @@ expresion :               CONSTANTE
                         | expresion '/' expresion                         {$$ = dividir($1, $3);}
                         ;
 
+identificador :         IDENTIFICADOR {if(!existe($1)){mostrarError($1,1); YYERROR;}else $$ = $1;};
 
 %%
 
