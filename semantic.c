@@ -3,17 +3,17 @@
 #include <string.h>
 #include "symbol.h"
 
-int temporales;
+int temporal;
 const int id_max = 20;
 
 void declarar(char *id){
 	printf("Reserve %s, 4\n", id); //reservo 4 bytes para la variable con nombre dado por el id
 }
 
-char* proxTemporal(){
+char* generarTemporal(){
 	char nuevoTemporal[id_max];
-	temporales++;
-	sprintf(nuevoTemporal, "Temp#%d", temporales);
+	temporal++;
+	sprintf(nuevoTemporal, "Temp#%d", temporal);
 	declarar(nuevoTemporal);
 	return strdup(nuevoTemporal);
 }
@@ -21,48 +21,54 @@ char* proxTemporal(){
 void leer(char *id){
 	printf("Read %s, Integer\n", id);
 }
+
 void escribir(char *id){
 	printf("Write %s, Integer\n", id);
 }
+
 char* negar(char *idEntrada){
   	char *idSalida;
-	idSalida = proxTemporal();
+	idSalida = generarTemporal();
 	printf("NEG %s,,%s\n", idEntrada, idSalida);
 	return idSalida;
 }
-char* multiplicar(char *idEntrada1, char *idEntrada2){
+
+char* multiplicar(char *opizq, char *opder){
 	char *idSalida;
-	idSalida = proxTemporal();
-	printf("MULT %s,%s,%s\n", idEntrada1, idEntrada2, idSalida);
-	return idSalida;
-}
-char* sumar(char *idEntrada1, char *idEntrada2){
-	char *idSalida;
-	idSalida = proxTemporal();
-	printf("ADD %s,%s,%s\n", idEntrada1, idEntrada2, idSalida);
-	return idSalida;
-}
-char* restar(char *idEntrada1, char *idEntrada2){
-	char *idSalida;
-	idSalida = proxTemporal();
-	printf("SUBS %s,%s,%s\n", idEntrada1, idEntrada2, idSalida);
+	idSalida = generarTemporal();
+	printf("MULT %s,%s,%s\n", opizq, opder, idSalida);
 	return idSalida;
 }
 
-char* dividir(char *idEntrada1, char *idEntrada2){
+char* sumar(char *opizq, char *opder){
 	char *idSalida;
-	idSalida = proxTemporal();
-	printf("DIV %s,%s,%s\n", idEntrada1, idEntrada2, idSalida);
+	idSalida = generarTemporal();
+	printf("ADD %s,%s,%s\n", opizq, opder, idSalida);
 	return idSalida;
 }
 
-void guardar(char *idEntrada, char *idSalida){
+char* restar(char *opizq, char *opder){
+	char *idSalida;
+	idSalida = generarTemporal();
+	printf("SUBS %s,%s,%s\n", opizq, opder, idSalida);
+	return idSalida;
+}
+
+char* dividir(char *opizq, char *opder){
+	char *idSalida;
+	idSalida = generarTemporal();
+	printf("DIV %s,%s,%s\n", opizq, opder, idSalida);
+	return idSalida;
+}
+
+void asignar(char *idEntrada, char *idSalida){
 	printf("Store %s, %s \n", idEntrada, idSalida);
 }
 
 void inicio(){
 	printf("Load rtlib,\n");
 }
+
 void fin(){
 	printf("Exit ,\n");
 }

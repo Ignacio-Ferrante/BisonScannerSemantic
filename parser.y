@@ -8,7 +8,7 @@ void yyerror(const char *);
 void mostrarError(char *id, int e);
 extern int errlex; 	//Contador de Errores Léxicos
 int errsem = 0;         //Contador de Errores Semanticos
-char *tipoMensaje[] = {"ya", "nunca"}; //Especifica el tipo de mensaje para el error semantico
+int tipoMensaje; //Especifica el tipo de mensaje para el error semantico
 %}
 
 
@@ -37,8 +37,8 @@ listaSentencias	:	  %empty
 
 sentencia       :     	  LEER '(' listaIdentificadores ')' ';'
                         | ESCRIBIR '(' listaExpresiones ')' ';'
-                        | DECLARAR IDENTIFICADOR ';'                      {if(!existe($2)){declarar($2); agregar($2);} else{mostrarError($2,0); YYERROR;}}
-                        | IDENTIFICADOR "<-" expresion ';'                {guardar($3,$1);}
+                        | DECLARAR IDENTIFICADOR ';'                      {if(!existe($2)) {declarar($2); agregar($2);} else {mostrarError($2,0); YYERROR;}}
+                        | IDENTIFICADOR "<-" expresion ';'                {asignar($3,$1);}
                         | error ';'
                         ;   
 
@@ -60,7 +60,7 @@ expresion :               CONSTANTE
                         | expresion '/' expresion                         {$$ = dividir($1, $3);}
                         ;
 
-identificador :         IDENTIFICADOR {if(!existe($1)){mostrarError($1,1); YYERROR;}else $$ = $1;};
+identificador :         IDENTIFICADOR {if(!existe($1)) {mostrarError($1,1); YYERROR;} else $$ = $1;};
 
 %%
 
@@ -71,7 +71,8 @@ void yyerror(const char *error){
 
 void mostrarError(char *id, int tipoError){
 	char errorMsg[200];
-	sprintf(errorMsg, "Error semantico: El identificador %s %s fue declarado", id, tipoMensaje[tipoError]);
+	if(tipoError == 0) sprintf(errorMsg, "Error semantico: El identificador %s ya fue declarado", id);
+	else sprintf(errorMsg, "Error semantico: El identificador %s nunca fue declarado", id);
 	yyerror(errorMsg);
 	errsem++;
 }

@@ -6,6 +6,6 @@ char* multiplicar(char *idEntrada1, char *idEntrada2);
 char* sumar(char *idEntrada1, char *idEntrada2);
 char* restar(char *idEntrada1, char *idEntrada2);
 char* dividir(char *idEntrada1, char *idEntrada2);
-void guardar(char *idEntrada, char *idSalida);
+void asignar(char *idEntrada, char *idSalida);
 void inicio();
 void fin();
